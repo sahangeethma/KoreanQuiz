@@ -201,18 +201,33 @@ function addWord() {
 
 function displayWordList() {
   const wordList = document.getElementById("wordList");
-  wordList.innerHTML = "<h3>Word Database:</h3>";
+  wordList.innerHTML = `
+      <div class="word-list-header">
+          <h3>Word Database:</h3>
+          <button onclick="showUpdateInstructions()" class="update-repo-btn">
+              <i class="fas fa-cloud-upload-alt"></i> Update Repository
+          </button>
+      </div>
+      <div class="word-list-content">
+  `;
+
   words.forEach((word, index) => {
     wordList.innerHTML += `
-            <div style="margin: 10px 0; padding: 10px; background-color: #f8f8f8; border-radius: 5px;">
-                ${word.korean} - ${word.sinhala}
-                <div style="float: right;">
-                    <button onclick="editWord(${index})" class="edit-btn">Edit</button>
-                    <button onclick="deleteWord(${index})" class="delete-btn">Delete</button>
-                </div>
-            </div>
-        `;
+          <div class="word-item">
+              ${word.korean} - ${word.sinhala}
+              <div class="word-actions">
+                  <button onclick="editWord(${index})" class="edit-btn">
+                      <i class="fas fa-edit"></i>
+                  </button>
+                  <button onclick="deleteWord(${index})" class="delete-btn">
+                      <i class="fas fa-trash"></i>
+                  </button>
+              </div>
+          </div>
+      `;
   });
+
+  wordList.innerHTML += "</div>";
 }
 
 function editWord(index) {
@@ -283,6 +298,35 @@ function checkPassword() {
   } else {
     document.getElementById("login-error").textContent = "Incorrect password";
   }
+}
+
+function showUpdateInstructions(jsonContent) {
+  const modal = document.createElement("div");
+  modal.className = "update-modal";
+
+  const formattedJson = JSON.stringify({ words: words }, null, 2);
+
+  modal.innerHTML = `
+      <div class="modal-content">
+          <h2>Update Repository</h2>
+          <p>To update the repository's words.json, follow these steps:</p>
+          <ol>
+              <li>Copy the content below</li>
+              <li>Go to your GitHub repository</li>
+              <li>Edit words.json</li>
+              <li>Paste and commit the new content</li>
+          </ol>
+          <div class="json-content">
+              <button onclick="copyJsonContent()" class="copy-btn">
+                  <i class="fas fa-copy"></i> Copy JSON
+              </button>
+              <pre>${formattedJson}</pre>
+          </div>
+          <button onclick="closeModal()" class="close-btn">Close</button>
+      </div>
+  `;
+
+  document.body.appendChild(modal);
 }
 
 // Add event listeners for enter key
@@ -383,6 +427,24 @@ function downloadWordsJSON() {
   linkElement.setAttribute("href", dataUri);
   linkElement.setAttribute("download", exportFileDefaultName);
   linkElement.click();
+}
+
+function copyJsonContent() {
+  const jsonContent = JSON.stringify({ words: words }, null, 2);
+  navigator.clipboard.writeText(jsonContent).then(() => {
+    const copyBtn = document.querySelector(".copy-btn");
+    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    setTimeout(() => {
+      copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy JSON';
+    }, 2000);
+  });
+}
+
+function closeModal() {
+  const modal = document.querySelector(".update-modal");
+  if (modal) {
+    modal.remove();
+  }
 }
 
 // Function to handle file upload
