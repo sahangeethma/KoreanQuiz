@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Korean-Sinhala Word Quiz</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="nav-buttons">
+        <button onclick="showQuiz()">Quiz</button>
+        <button onclick="showAdminLogin()">Admin</button>
+        <button onclick="toggleQuizDirection()" id="directionToggle">
+          한글 → සිංහල
+        </button>
+        <button onclick="speakWord()" class="speaker-button" id="speakButton">
+          <i class="fas fa-volume-up"></i>
+        </button>
+      </div>
+
+      <div id="quiz" class="quiz-container">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+      </div>
+
+      <div id="admin-login" class="admin-login">
+        <h3>Admin Login</h3>
+        <div class="login-form">
+          <input
+            type="password"
+            id="adminPassword"
+            placeholder="Enter Password"
+          />
+          <button onclick="checkPassword()">Login</button>
+          <div id="login-error" class="error-message"></div>
+        </div>
+      </div>
+
+      <div id="admin" class="admin-container">
+        <div class="admin-controls">
+          <button onclick="showChangePassword()" class="change-pwd-btn">
+            Change Password
+          </button>
+          <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+        <div class="admin-form">
+          <input type="text" id="koreanWord" placeholder="Enter Korean word" />
+          <input
+            type="text"
+            id="sinhalaWord"
+            placeholder="Enter Sinhala word"
+          />
+          <button onclick="addWord()">Add Word</button>
+
+          <div class="database-controls">
+            <button onclick="downloadWordsJSON()" class="download-btn">
+              <i class="fas fa-download"></i> Export Words
+            </button>
+            <label for="fileInput" class="upload-btn">
+              <i class="fas fa-upload"></i> Import Words
+            </label>
+            <input
+              type="file"
+              id="fileInput"
+              accept=".json"
+              style="display: none"
+              onchange="handleFileUpload(event)"
+            />
+          </div>
+        </div>
+        <div id="wordList" style="margin-top: 20px"></div>
+      </div>
+
+      <div id="change-password" class="change-password">
+        <h3>Change Admin Password</h3>
+        <div class="password-form">
+          <input
+            type="password"
+            id="currentPassword"
+            placeholder="Current Password"
+          />
+          <input type="password" id="newPassword" placeholder="New Password" />
+          <input
+            type="password"
+            id="confirmPassword"
+            placeholder="Confirm New Password"
+          />
+          <button onclick="updatePassword()">Update Password</button>
+          <button onclick="cancelPasswordChange()" class="cancel-btn">
+            Cancel
+          </button>
+          <div id="password-error" class="error-message"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="timer" class="timer">3</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+      // Add event listeners when the document is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Enter key for admin password
+        document
+          .getElementById("adminPassword")
+          .addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+              checkPassword();
+            }
+          });
+
+        // Enter key for Korean word input
+        document
+          .getElementById("koreanWord")
+          .addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+              document.getElementById("sinhalaWord").focus();
+            }
+          });
+
+        // Enter key for Sinhala word input
+        document
+          .getElementById("sinhalaWord")
+          .addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+              addWord();
+            }
+          });
+      });
+    </script>
+  </body>
+</html>
