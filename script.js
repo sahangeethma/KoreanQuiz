@@ -492,54 +492,54 @@ function initializeWords() {
 
 //////////////////////////////////////////
 
-// Configuration
-const CONFIG = {
-  GITHUB_OWNER: "sahangeethma",
-  GITHUB_REPO: "KoreanQuiz",
-  GITHUB_PATH: "words.json",
-  PASSWORD_FILE: "admin-config.json",
-};
+// // Configuration
+// const CONFIG = {
+//   GITHUB_OWNER: "sahangeethma",
+//   GITHUB_REPO: "KoreanQuiz",
+//   GITHUB_PATH: "words.json",
+//   PASSWORD_FILE: "admin-config.json",
+// };
 
-// GitHub API helper functions
-async function getGitHubFile(path) {
-  const response = await fetch(
-    `https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/contents/${path}`
-  );
-  const data = await response.json();
-  return {
-    content: JSON.parse(atob(data.content)),
-    sha: data.sha,
-  };
-}
+// // GitHub API helper functions
+// async function getGitHubFile(path) {
+//   const response = await fetch(
+//     `https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/contents/${path}`
+//   );
+//   const data = await response.json();
+//   return {
+//     content: JSON.parse(atob(data.content)),
+//     sha: data.sha,
+//   };
+// }
 
-async function updateGitHubFile(path, content, sha) {
-  const token = localStorage.getItem(
-    "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"
-  );
-  if (!token) {
-    throw new Error("GitHub token not found");
-  }
+// async function updateGitHubFile(path, content, sha) {
+//   const token = localStorage.getItem(
+//     "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"
+//   );
+//   if (!token) {
+//     throw new Error("GitHub token not found");
+//   }
 
-  const response = await fetch(
-    `https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/contents/${path}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: "Update words database",
-        content: btoa(JSON.stringify(content, null, 2)),
-        sha: sha,
-      }),
-    }
-  );
+//   const response = await fetch(
+//     `https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/contents/${path}`,
+//     {
+//       method: "PUT",
+//       headers: {
+//         Authorization: `token ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         message: "Update words database",
+//         content: btoa(JSON.stringify(content, null, 2)),
+//         sha: sha,
+//       }),
+//     }
+//   );
 
-  if (!response.ok) {
-    throw new Error("Failed to update GitHub file");
-  }
-}
+//   if (!response.ok) {
+//     throw new Error("Failed to update GitHub file");
+//   }
+// }
 
 // Enhanced word management
 class WordManager {
@@ -618,26 +618,26 @@ class WordManager {
     this.saveToLocal();
   }
 
-  async addWord(korean, sinhala) {
-    this.words.push({ korean, sinhala });
-    this.saveToLocal();
-    await this.sync();
-    displayWordList();
-  }
+  //   async addWord(korean, sinhala) {
+  //     this.words.push({ korean, sinhala });
+  //     this.saveToLocal();
+  //     await this.sync();
+  //     displayWordList();
+  //   }
 
-  async updateWord(index, korean, sinhala) {
-    this.words[index] = { korean, sinhala };
-    this.saveToLocal();
-    await this.sync();
-    displayWordList();
-  }
+  //   async updateWord(index, korean, sinhala) {
+  //     this.words[index] = { korean, sinhala };
+  //     this.saveToLocal();
+  //     await this.sync();
+  //     displayWordList();
+  //   }
 
-  async deleteWord(index) {
-    this.words.splice(index, 1);
-    this.saveToLocal();
-    await this.sync();
-    displayWordList();
-  }
+  //   async deleteWord(index) {
+  //     this.words.splice(index, 1);
+  //     this.saveToLocal();
+  //     await this.sync();
+  //     displayWordList();
+  //   }
 }
 
 // Enhanced password management
@@ -689,20 +689,20 @@ const wordManager = new WordManager();
 const passwordManager = new PasswordManager();
 
 // Update your existing functions to use the managers
-async function addWord() {
-  const korean = document.getElementById("koreanWord").value;
-  const sinhala = document.getElementById("sinhalaWord").value;
+// async function addWord() {
+//   const korean = document.getElementById("koreanWord").value;
+//   const sinhala = document.getElementById("sinhalaWord").value;
 
-  if (korean && sinhala) {
-    try {
-      await wordManager.addWord(korean, sinhala);
-      document.getElementById("koreanWord").value = "";
-      document.getElementById("sinhalaWord").value = "";
-    } catch (error) {
-      alert("Failed to add word. Please try again.");
-    }
-  }
-}
+//   if (korean && sinhala) {
+//     try {
+//       await wordManager.addWord(korean, sinhala);
+//       document.getElementById("koreanWord").value = "";
+//       document.getElementById("sinhalaWord").value = "";
+//     } catch (error) {
+//       alert("Failed to add word. Please try again.");
+//     }
+//   }
+// }
 
 async function updatePassword() {
   const currentPassword = document.getElementById("currentPassword").value;
@@ -750,7 +750,7 @@ const GITHUB_CONFIG = {
   repo: "KoreanQuiz",
   branch: "main", // or 'master' depending on your default branch
   wordsPath: "words.json",
-  token: "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", // We'll handle this securely
+  token: "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", // We'll handle this securely
 };
 
 async function updateWordsFile() {
