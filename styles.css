@@ -307,3 +307,23 @@ button:hover {
 .fas {
     font-size: 16px;
 }
+
+.question-container {
+    display: flex;
+    align-items: baseline;
+}
+
+.question {
+    flex: 1;
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+}
+
+.speaker-button {
+    margin-left: 10px;
+    cursor: pointer;
+}
