@@ -3,135 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Korean-Sinhala Word Quiz</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>Korean-Sinhala Quiz</title>
     <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
+    <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <div class="container">
-      <div class="nav-buttons">
-        <button onclick="showQuiz()">Quiz</button>
-        <button onclick="showAdminLogin()">Admin</button>
-        <button onclick="toggleQuizDirection()" id="directionToggle">
-          한글 → සිංහල
-        </button>
-      </div>
-
-      <div id="quiz" class="quiz-container">
-        <div class="score">Score: <span id="score">0</span></div>
-        <div class="question" id="question"></div>
-        <div class="options" id="options"></div>
-      </div>
-
-      <div id="admin-login" class="admin-login">
-        <h3>Admin Login</h3>
-        <div class="login-form">
-          <input
-            type="password"
-            id="adminPassword"
-            placeholder="Enter Password"
-          />
-          <button onclick="checkPassword()">Login</button>
-          <div id="login-error" class="error-message"></div>
-        </div>
-      </div>
-
-      <div id="admin" class="admin-container">
-        <div class="admin-controls">
-          <button onclick="showChangePassword()" class="change-pwd-btn">
-            Change Password
+  <body class="bg-light">
+    <div class="container py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="btn-group" role="group">
+          <button class="btn btn-primary active" onclick="showTab('quiz')">
+            Quiz
           </button>
-          <button onclick="logout()" class="logout-btn">Logout</button>
+          <button class="btn btn-primary" onclick="showTab('admin')">
+            Admin
+          </button>
         </div>
-        <div class="admin-form">
-          <input type="text" id="koreanWord" placeholder="Enter Korean word" />
+        <div class="form-check form-switch">
           <input
-            type="text"
-            id="sinhalaWord"
-            placeholder="Enter Sinhala word"
+            class="form-check-input"
+            type="checkbox"
+            id="directionSwitch"
+            onchange="switchDirection()"
           />
-          <button onclick="addWord()">Add Word</button>
+          <label class="form-check-label" for="directionSwitch">
+            <span id="directionLabel">Korean → Sinhala</span>
+          </label>
+        </div>
+      </div>
 
-          <div class="database-controls">
-            <button onclick="downloadWordsJSON()" class="download-btn">
-              <i class="fas fa-download"></i> Export Words
-            </button>
-            <label for="fileInput" class="upload-btn">
-              <i class="fas fa-upload"></i> Import Words
-            </label>
-            <input
-              type="file"
-              id="fileInput"
-              accept=".json"
-              style="display: none"
-              onchange="handleFileUpload(event)"
-            />
+      <!-- Quiz Section -->
+      <div id="quiz-section" class="tab-content active">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="text-center mb-4">
+              <h5 class="card-title">Score: <span id="score">0</span></h5>
+              <h2 class="question mb-4" id="question"></h2>
+            </div>
+            <div class="options" id="options"></div>
           </div>
         </div>
-        <div id="wordList" style="margin-top: 20px"></div>
       </div>
 
-      <div id="change-password" class="change-password">
-        <h3>Change Admin Password</h3>
-        <div class="password-form">
-          <input
-            type="password"
-            id="currentPassword"
-            placeholder="Current Password"
-          />
-          <input type="password" id="newPassword" placeholder="New Password" />
-          <input
-            type="password"
-            id="confirmPassword"
-            placeholder="Confirm New Password"
-          />
-          <button onclick="updatePassword()">Update Password</button>
-          <button onclick="cancelPasswordChange()" class="cancel-btn">
-            Cancel
-          </button>
-          <div id="password-error" class="error-message"></div>
+      <!-- Admin Section -->
+      <div id="admin-section" class="tab-content">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-4">Add New Word</h5>
+            <form id="wordForm" onsubmit="addNewWord(event)">
+              <div class="mb-3">
+                <label for="koreanWord" class="form-label">Korean Word:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="koreanWord"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="sinhalaWord" class="form-label"
+                  >Sinhala Meaning:</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="sinhalaWord"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">Add Word</button>
+            </form>
+            <div class="mt-4">
+              <h5 class="card-title mb-3">Word List</h5>
+              <div id="wordList" class="list-group">
+                <!-- Words will be listed here -->
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div id="timer" class="timer">3</div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="database.js"></script>
     <script src="script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script>
-      // Add event listeners when the document is loaded
-      document.addEventListener("DOMContentLoaded", function () {
-        // Enter key for admin password
-        document
-          .getElementById("adminPassword")
-          .addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-              checkPassword();
-            }
-          });
-
-        // Enter key for Korean word input
-        document
-          .getElementById("koreanWord")
-          .addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-              document.getElementById("sinhalaWord").focus();
-            }
-          });
-
-        // Enter key for Sinhala word input
-        document
-          .getElementById("sinhalaWord")
-          .addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-              addWord();
-            }
-          });
-      });
-    </script>
   </body>
 </html>
