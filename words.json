@@ -1,36 +1,36 @@
 {
-  "words": [
-    {
-      "korean": "안녕하세요",
-      "sinhala": "ආයුබෝවන්"
-    },
-    {
-      "korean": "감사합니다",
-      "sinhala": "ස්තූතියි"
-    },
-    {
-      "korean": "사랑해요",
-      "sinhala": "ආදරෙයි"
-    },
-    {
-      "korean": "친구",
-      "sinhala": "යාළුවා"
-    },
-    {
-      "korean": "가족",
-      "sinhala": "පවුල"
-    },
-    {
-      "korean": "가다",
-      "sinhala": "යනවා"
-    },
-    {
-      "korean": "오다",
-      "sinhala": "එනවා"
-    },
-    {
-      "korean": "아기",
-      "sinhala": "ළමයා"
-    }
-  ]
-}
+    "words": [
+      {
+        "korean": "안녕하세요",
+        "sinhala": "ආයුබෝවන්"
+      },
+      {
+        "korean": "감사합니다",
+        "sinhala": "ස්තූතියි"
+      },
+      {
+        "korean": "사랑해요",
+        "sinhala": "ආදරෙයි"
+      },
+      {
+        "korean": "친구",
+        "sinhala": "යාළුවා"
+      },
+      {
+        "korean": "가족",
+        "sinhala": "පවුල"
+      },
+      {
+        "korean": "가다",
+        "sinhala": "යනවා"
+      },
+      {
+        "korean": "오다",
+        "sinhala": "එනවා"
+      },
+      {
+        "korean": "아기",
+        "sinhala": "ළමයා"
+      }
+    ]
+  }

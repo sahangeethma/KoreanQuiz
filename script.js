@@ -489,3 +489,255 @@ function initializeWords() {
     showQuiz();
   }
 }
+
+//////////////////////////////////////////
+
+// Configuration
+const CONFIG = {
+  GITHUB_OWNER: "sahangeethma",
+  GITHUB_REPO: "KoreanQuiz",
+  GITHUB_PATH: "words.json",
+  PASSWORD_FILE: "admin-config.json",
+};
+
+// GitHub API helper functions
+async function getGitHubFile(path) {
+  const response = await fetch(
+    `https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/contents/${path}`
+  );
+  const data = await response.json();
+  return {
+    content: JSON.parse(atob(data.content)),
+    sha: data.sha,
+  };
+}
+
+async function updateGitHubFile(path, content, sha) {
+  const token = localStorage.getItem(
+    "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"
+  );
+  if (!token) {
+    throw new Error("GitHub token not found");
+  }
+
+  const response = await fetch(
+    `https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${CONFIG.GITHUB_REPO}/contents/${path}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: "Update words database",
+        content: btoa(JSON.stringify(content, null, 2)),
+        sha: sha,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update GitHub file");
+  }
+}
+
+// Enhanced word management
+class WordManager {
+  constructor() {
+    this.words = [];
+    this.lastSync = null;
+  }
+
+  async init() {
+    try {
+      const { content } = await getGitHubFile(CONFIG.GITHUB_PATH);
+      this.words = content.words;
+      this.lastSync = new Date();
+      this.saveToLocal();
+    } catch (error) {
+      console.error("Failed to init from GitHub:", error);
+      this.loadFromLocal();
+    }
+  }
+
+  async sync() {
+    try {
+      const { content, sha } = await getGitHubFile(CONFIG.GITHUB_PATH);
+
+      // If remote is newer, update local
+      if (this.lastSync && new Date(content.lastUpdate) > this.lastSync) {
+        this.words = content.words;
+        this.saveToLocal();
+      }
+      // If local is newer, update remote
+      else if (this.lastSync) {
+        await this.pushToGitHub(sha);
+      }
+
+      this.lastSync = new Date();
+    } catch (error) {
+      console.error("Sync failed:", error);
+      throw error;
+    }
+  }
+
+  async pushToGitHub(sha) {
+    const content = {
+      words: this.words,
+      lastUpdate: new Date().toISOString(),
+    };
+    await updateGitHubFile(CONFIG.GITHUB_PATH, content, sha);
+  }
+
+  saveToLocal() {
+    localStorage.setItem(
+      "wordDatabase",
+      JSON.stringify({
+        words: this.words,
+        lastSync: this.lastSync,
+      })
+    );
+  }
+
+  loadFromLocal() {
+    const saved = localStorage.getItem("wordDatabase");
+    if (saved) {
+      const data = JSON.parse(saved);
+      this.words = data.words;
+      this.lastSync = new Date(data.lastSync);
+    } else {
+      this.loadDefaultWords();
+    }
+  }
+
+  loadDefaultWords() {
+    this.words = [
+      { korean: "안녕하세요", sinhala: "ආයුබෝවන්" },
+      { korean: "감사합니다", sinhala: "ස්තූතියි" },
+    ];
+    this.saveToLocal();
+  }
+
+  async addWord(korean, sinhala) {
+    this.words.push({ korean, sinhala });
+    this.saveToLocal();
+    await this.sync();
+    displayWordList();
+  }
+
+  async updateWord(index, korean, sinhala) {
+    this.words[index] = { korean, sinhala };
+    this.saveToLocal();
+    await this.sync();
+    displayWordList();
+  }
+
+  async deleteWord(index) {
+    this.words.splice(index, 1);
+    this.saveToLocal();
+    await this.sync();
+    displayWordList();
+  }
+}
+
+// Enhanced password management
+class PasswordManager {
+  constructor() {
+    this.initPassword();
+  }
+
+  async initPassword() {
+    try {
+      const { content } = await getGitHubFile(CONFIG.PASSWORD_FILE);
+      localStorage.setItem("adminPassword", content.password);
+    } catch (error) {
+      console.error("Failed to init password from GitHub:", error);
+      if (!localStorage.getItem("adminPassword")) {
+        const defaultPassword = "admin123";
+        const hashedPassword = CryptoJS.SHA256(defaultPassword).toString();
+        localStorage.setItem("adminPassword", hashedPassword);
+        this.updateGitHubPassword(hashedPassword);
+      }
+    }
+  }
+
+  async updatePassword(newPassword) {
+    const hashedPassword = CryptoJS.SHA256(newPassword).toString();
+    try {
+      const { sha } = await getGitHubFile(CONFIG.PASSWORD_FILE);
+      await updateGitHubFile(
+        CONFIG.PASSWORD_FILE,
+        { password: hashedPassword },
+        sha
+      );
+      localStorage.setItem("adminPassword", hashedPassword);
+      return true;
+    } catch (error) {
+      console.error("Failed to update password:", error);
+      return false;
+    }
+  }
+
+  verifyPassword(password) {
+    const hashedInput = CryptoJS.SHA256(password).toString();
+    return hashedInput === localStorage.getItem("adminPassword");
+  }
+}
+
+// Initialize managers
+const wordManager = new WordManager();
+const passwordManager = new PasswordManager();
+
+// Update your existing functions to use the managers
+async function addWord() {
+  const korean = document.getElementById("koreanWord").value;
+  const sinhala = document.getElementById("sinhalaWord").value;
+
+  if (korean && sinhala) {
+    try {
+      await wordManager.addWord(korean, sinhala);
+      document.getElementById("koreanWord").value = "";
+      document.getElementById("sinhalaWord").value = "";
+    } catch (error) {
+      alert("Failed to add word. Please try again.");
+    }
+  }
+}
+
+async function updatePassword() {
+  const currentPassword = document.getElementById("currentPassword").value;
+  const newPassword = document.getElementById("newPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const errorElement = document.getElementById("password-error");
+
+  if (!passwordManager.verifyPassword(currentPassword)) {
+    errorElement.textContent = "Current password is incorrect";
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    errorElement.textContent =
+      "New password must be at least 6 characters long";
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    errorElement.textContent = "New passwords do not match";
+    return;
+  }
+
+  try {
+    await passwordManager.updatePassword(newPassword);
+    document.getElementById("change-password").style.display = "none";
+    alert("Password successfully updated!");
+  } catch (error) {
+    errorElement.textContent = "Failed to update password. Please try again.";
+  }
+}
+
+// Initialize the application
+document.addEventListener("DOMContentLoaded", async () => {
+  await wordManager.init();
+  await passwordManager.initPassword();
+  showQuiz();
+});
