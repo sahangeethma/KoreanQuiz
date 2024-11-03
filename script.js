@@ -741,3 +741,161 @@ document.addEventListener("DOMContentLoaded", async () => {
   await passwordManager.initPassword();
   showQuiz();
 });
+
+/////////////////////////////////////////////
+
+// GitHub configuration for your specific repository
+const GITHUB_CONFIG = {
+  owner: "sahangeethma",
+  repo: "KoreanQuiz",
+  branch: "main", // or 'master' depending on your default branch
+  wordsPath: "words.json",
+  token: "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", // We'll handle this securely
+};
+
+async function updateWordsFile() {
+  try {
+    // First, get the current file content and SHA
+    const response = await fetch(
+      `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.wordsPath}`
+    );
+    const fileData = await response.json();
+
+    // Prepare the new content
+    const newContent = {
+      words: words, // Your existing words array
+    };
+
+    // Create the update request
+    const updateResponse = await fetch(
+      `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.wordsPath}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `token ${GITHUB_CONFIG.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: "Update words database",
+          content: btoa(JSON.stringify(newContent, null, 2)),
+          sha: fileData.sha,
+          branch: GITHUB_CONFIG.branch,
+        }),
+      }
+    );
+
+    if (!updateResponse.ok) {
+      throw new Error("Failed to update GitHub file");
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error updating words file:", error);
+    throw error;
+  }
+}
+
+// Modified addWord function
+async function addWord() {
+  const korean = document.getElementById("koreanWord").value;
+  const sinhala = document.getElementById("sinhalaWord").value;
+
+  if (korean && sinhala) {
+    try {
+      // Add to local array
+      words.push({ korean, sinhala });
+
+      // Save to localStorage for backup
+      saveToLocalStorage();
+
+      // Update GitHub repository
+      await updateWordsFile();
+
+      // Clear input fields
+      document.getElementById("koreanWord").value = "";
+      document.getElementById("sinhalaWord").value = "";
+
+      // Refresh word list display
+      displayWordList();
+
+      // Show success message
+      alert("Word added successfully!");
+    } catch (error) {
+      // Revert local changes if GitHub update fails
+      words.pop(); // Remove the last added word
+      saveToLocalStorage();
+      alert("Failed to add word. Please try again.");
+    }
+  }
+}
+
+// Modified deleteWord function
+async function deleteWord(index) {
+  if (confirm("Are you sure you want to delete this word?")) {
+    try {
+      const deletedWord = words[index];
+      words.splice(index, 1);
+      await updateWordsFile();
+      displayWordList();
+      saveToLocalStorage();
+    } catch (error) {
+      // Revert if update fails
+      words.push(deletedWord);
+      alert("Failed to delete word. Please try again.");
+      displayWordList();
+    }
+  }
+}
+
+// Modified editWord function
+async function editWord(index) {
+  const word = words[index];
+  const koreanInput = prompt("Edit Korean word:", word.korean);
+  if (koreanInput !== null) {
+    const sinhalaInput = prompt("Edit Sinhala word:", word.sinhala);
+    if (sinhalaInput !== null) {
+      const oldWord = { ...words[index] };
+      try {
+        words[index] = {
+          korean: koreanInput,
+          sinhala: sinhalaInput,
+        };
+        await updateWordsFile();
+        displayWordList();
+        saveToLocalStorage();
+      } catch (error) {
+        // Revert if update fails
+        words[index] = oldWord;
+        alert("Failed to edit word. Please try again.");
+        displayWordList();
+      }
+    }
+  }
+}
+
+// Function to initialize GitHub token
+function initializeGitHubToken() {
+  const token = prompt("Please enter your GitHub Personal Access Token:");
+  if (token) {
+    GITHUB_CONFIG.token = token;
+    localStorage.setItem("github_token", token);
+    return true;
+  }
+  return false;
+}
+
+// Modified showAdmin function to check for GitHub token
+function showAdmin() {
+  const token = localStorage.getItem("github_token");
+  if (!token && !initializeGitHubToken()) {
+    alert("GitHub token is required for admin functions");
+    return;
+  }
+  GITHUB_CONFIG.token = token;
+
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("admin-login").style.display = "none";
+  document.getElementById("admin").style.display = "block";
+  document.getElementById("change-password").style.display = "none";
+  displayWordList();
+}
